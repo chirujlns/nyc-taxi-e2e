@@ -80,9 +80,30 @@ class NycTaxiE2EPipelineStack(Stack):
 
         glue_build_project = codebuild.PipelineProject(
             self, "GlueScriptsBuild",
-            build_spec=codebuild.BuildSpec.from_source_filename("buildspec.yml"),  # Specify the relative path
+            build_spec=codebuild.BuildSpec.from_source_filename("buildspec.yml"),
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.STANDARD_5_0,
+            ),
+            role=iam.Role(
+                self, "GlueScriptsBuildRole",
+                assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com"),
+                inline_policies={
+                    "S3Permissions": iam.PolicyDocument(
+                        statements=[
+                            iam.PolicyStatement(
+                                actions=[
+                                    "s3:ListBucket",
+                                    "s3:GetObject",
+                                    "s3:PutObject"
+                                ],
+                                resources=[
+                                    "arn:aws:s3:::nyc-taxi-e2e",  # For listing the bucket
+                                    "arn:aws:s3:::nyc-taxi-e2e/*"  # For accessing objects inside the bucket
+                                ]
+                            )
+                        ]
+                    )
+                }
             )
         )
 

@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.x  # Specify the Python version required for Glue scripts
+    commands:
+      - echo "Installing dependencies..."
+      - pip install awscli  # Install AWS CLI for S3 sync command (if needed)
+
+  pre_build:
+    commands:
+      - echo "Pre-build phase..."
+
+  build:
+    commands:
+      - echo "Starting build..."
+      - echo "Syncing Glue scripts to S3..."
+      - aws s3 sync glue-scripts/ s3://nyc-taxi-e2e/scripts/  # Replace with your actual S3 bucket
+
+artifacts:
+  files:
+    - '**/*'  # Include all files in the artifacts output (if applicable)

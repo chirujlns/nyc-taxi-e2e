@@ -57,22 +57,30 @@ class NycTaxiE2EPipelineStack(Stack):
         )
 
         # Build project: Upload Glue scripts to S3
+        # glue_build_project = codebuild.PipelineProject(
+        #     self, "GlueScriptsBuild",
+        #     build_spec=codebuild.BuildSpec.from_object({
+        #         "version": "0.2",
+        #         "phases": {
+        #             "install": {
+        #                 "runtime-versions": {"python": "3.x"},
+        #             },
+        #             "build": {
+        #                 "commands": [
+        #                     "aws s3 sync glue_scripts/ s3://nyc-taxi-e2e/scripts/"
+        #                 ]
+        #             }
+        #         },
+        #         "artifacts": {"files": ["**/*"]},
+        #     }),
+        #     environment=codebuild.BuildEnvironment(
+        #         build_image=codebuild.LinuxBuildImage.STANDARD_5_0,
+        #     )
+        # )
+
         glue_build_project = codebuild.PipelineProject(
             self, "GlueScriptsBuild",
-            build_spec=codebuild.BuildSpec.from_object({
-                "version": "0.2",
-                "phases": {
-                    "install": {
-                        "runtime-versions": {"python": "3.x"},
-                    },
-                    "build": {
-                        "commands": [
-                            "aws s3 sync glue_scripts/ s3://nyc-taxi-e2e/scripts/"
-                        ]
-                    }
-                },
-                "artifacts": {"files": ["**/*"]},
-            }),
+            build_spec=codebuild.BuildSpec.from_source_filename("buildspec.yml"),  # Specify the relative path
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.STANDARD_5_0,
             )

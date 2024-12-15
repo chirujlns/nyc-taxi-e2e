@@ -17,6 +17,22 @@ class NycTaxiE2EGlueStack(Stack):
         data_bucket = s3.Bucket.from_bucket_name(self, "DataBucket", Fn.import_value("DataBucketName"))
         script_bucket = s3.Bucket.from_bucket_name(self, "ScriptBucket", f'{Fn.import_value("DataBucketName")}/scripts/')
 
+        
+        # Define a policy statement for Glue access to the bucket
+        glue_access_policy = iam.PolicyStatement(
+            actions=[
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            resources=[
+                data_bucket.bucket_arn,
+                f"{data_bucket.bucket_arn}/*"
+            ]
+        )
+
+
         # Glue Database
         glue_database = glue.CfnDatabase(
             self,
@@ -39,12 +55,15 @@ class NycTaxiE2EGlueStack(Stack):
                         iam.PolicyStatement(
                             actions=[
                                 "s3:ListBucket",
-                                "s3:GetObject"
+                                "s3:GetObject",
+                                "s3:DeleteObject",
+                                "s3:PutObject"
                             ],
                             resources=[
                                 f"{data_bucket.bucket_arn}",  # Access to the bucket
-                                f"{data_bucket.bucket_arn}/raw/*",  # Access to the raw folder
+                                f"{data_bucket.bucket_arn}/raw_tripdata/*",  # Access to the raw folder
                                 f"{data_bucket.bucket_arn}/scripts/*",
+                                f"{data_bucket.bucket_arn}/*"
                             ],
                         ),
                         # Glue Permissions
@@ -103,12 +122,24 @@ class NycTaxiE2EGlueStack(Stack):
                             ],
                             resources=[
                                 f"{data_bucket.bucket_arn}",  # Access to the bucket
-                                f"{data_bucket.bucket_arn}/raw/*",  # Access to the raw folder
+                                f"{data_bucket.bucket_arn}/raw_tripdata/*",  # Access to the raw folder
+                                f"{data_bucket.bucket_arn}/processed_tripdata/*"
                             ],
                         ),
                         iam.PolicyStatement(
-                            actions=["glue:CreateTable", "glue:UpdateTable", "glue:GetDatabase"],
+                            actions=["glue:*"],
                             resources=["*"],  # Update based on your Glue database permissions
+                        ),
+                        iam.PolicyStatement(
+                            actions=[
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents",
+                                "logs:DescribeLogStreams"
+                            ],
+                            resources=[
+                                f"arn:aws:logs:{self.region}:{self.account}:log-group:/aws-glue/crawlers:*"
+                            ],
                         ),
                     ]
                 )
@@ -121,7 +152,7 @@ class NycTaxiE2EGlueStack(Stack):
             role=crawler_role.role_arn,
             database_name="nyc_taxi_db",
             targets={
-                "s3Targets": [{"path": f"s3://{data_bucket.bucket_name}/raw/"}]
+                "s3Targets": [{"path": f"s3://{data_bucket.bucket_name}/processed_tripdata/"}]
             },
             table_prefix="raw_",
         )

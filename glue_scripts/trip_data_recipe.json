@@ -1,0 +1,54 @@
+[
+  {
+    "Action": {
+      "Operation": "YEAR",
+      "Parameters": {
+        "dateTimeFormat": "yyyy-mm-dd*HH:MM:SS",
+        "functionStepType": "YEAR",
+        "sourceColumn": "tpep_pickup_datetime",
+        "targetColumn": "year"
+      }
+    }
+  },
+  {
+    "Action": {
+      "Operation": "MONTH",
+      "Parameters": {
+        "functionStepType": "MONTH",
+        "sourceColumn": "tpep_pickup_datetime",
+        "targetColumn": "month",
+        "units": "month"
+      }
+    }
+  },
+  {
+    "Action": {
+      "Operation": "REMOVE_VALUES",
+      "Parameters": {
+        "sourceColumn": "year"
+      }
+    },
+    "ConditionExpressions": [
+      {
+        "Condition": "IS_NOT",
+        "Value": "[\"2019\"]",
+        "TargetColumn": "year"
+      }
+    ]
+  },
+  {
+    "Action": {
+      "Operation": "REMOVE_VALUES",
+      "Parameters": {
+        "sourceColumn": "month"
+      }
+    },
+    "ConditionExpressions": [
+      {
+        "Condition": "IS_NOT",
+        "Value": "[\"1\"]",
+        "TargetColumn": "month"
+      }
+    ]
+  }
+]

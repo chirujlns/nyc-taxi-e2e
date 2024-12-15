@@ -17,7 +17,7 @@ class NycTaxiE2ES3Stack(Stack):
         # Define a new S3 bucket
         data_bucket = s3.Bucket(
             self, "NYCTaxiE2EDataBucket",
-            bucket_name="nyc-taxi-e2e",  # Custom bucket name
+            bucket_name="nyc-taxi-e2e-cmd",  # Custom bucket name
             versioned=True,             # Enable versioning for data protection
             encryption=s3.BucketEncryption.S3_MANAGED,  # S3-managed encryption
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,  # Block all public access
@@ -28,7 +28,7 @@ class NycTaxiE2ES3Stack(Stack):
         # Create lifecycle rules for transitioning data to Glacier and cleanup
         data_bucket.add_lifecycle_rule(
             id="MoveToGlacier",
-            prefix="processed/",  # Lifecycle for processed data
+            prefix="processed_tripdata/",  # Lifecycle for processed data
             transitions=[
                 s3.Transition(
                     storage_class=s3.StorageClass.GLACIER,
@@ -40,7 +40,7 @@ class NycTaxiE2ES3Stack(Stack):
 
         data_bucket.add_lifecycle_rule(
             id="DeleteOldRawData",
-            prefix="raw/",  # Lifecycle for raw data
+            prefix="raw_tripdata/",  # Lifecycle for raw data
             expiration=Duration.days(90)  # Delete raw data after 90 days
         )
 
@@ -49,14 +49,22 @@ class NycTaxiE2ES3Stack(Stack):
             self, "CreateFolders",
             sources=[s3_deployment.Source.asset("./dummy-folder")],  # Deploys empty content
             destination_bucket=data_bucket,
-            destination_key_prefix="raw/"  # Creates the raw/ folder
+            destination_key_prefix="raw_tripdata/"  # Creates the raw/ folder
         )
         s3_deployment.BucketDeployment(
             self, "CreateProcessedFolder",
             sources=[s3_deployment.Source.asset("./dummy-folder")],  # Deploys empty content
             destination_bucket=data_bucket,
-            destination_key_prefix="processed/"  # Creates the processed/ folder
+            destination_key_prefix="processed_tripdata/"  # Creates the processed/ folder
         )
+
+        s3_deployment.BucketDeployment(
+            self, "CreateProcessedFolder2",
+            sources=[s3_deployment.Source.asset("./dummy-folder")],  # Deploys empty content
+            destination_bucket=data_bucket,
+            destination_key_prefix="raw_locationdata/"  # Creates the processed/ folder
+        )
+
 
         s3_deployment.BucketDeployment(
             self, "CreateScriptsFolder",
@@ -65,18 +73,18 @@ class NycTaxiE2ES3Stack(Stack):
             destination_key_prefix="scripts/"  # Creates the scripts/ folder
         )
 
-        # Define a policy statement for Glue access to the bucket
-        glue_access_policy = iam.PolicyStatement(
-            actions=[
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:ListBucket",
-                "s3:DeleteObject"
-            ],
-            resources=[
-                data_bucket.bucket_arn,
-                f"{data_bucket.bucket_arn}/*"
-            ]
+                # Create folders for profiling and cleaning
+        s3_deployment.BucketDeployment(
+            self, "CreateDataBrewProfilingFolders",
+            sources=[s3_deployment.Source.asset("./dummy-folder")],
+            destination_bucket=data_bucket,
+            destination_key_prefix="databrew-output/profiling/"
+        )
+        s3_deployment.BucketDeployment(
+            self, "CreateDataBrewCleaningOutputFolder",
+            sources=[s3_deployment.Source.asset("./dummy-folder")],
+            destination_bucket=data_bucket,
+            destination_key_prefix="databrew-output/cleaning/"
         )
 
 

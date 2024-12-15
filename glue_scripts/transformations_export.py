@@ -13,7 +13,7 @@ logger = glueContext.get_logger()
 
 # Parameters
 args = getResolvedOptions(sys.argv, ["JOB_NAME"])
-bucket_name = "nyc-taxi-e2e"
+bucket_name = "nyc-taxi-e2e-cmd"
 raw_folder = f"s3://{bucket_name}/raw/"
 processed_folder = f"s3://{bucket_name}/processed/"
 location_csv_path = f"{raw_folder}/taxi+_zone_lookup.csv"

@@ -1,0 +1,12 @@
+aws glue start-job-run \
+    --job-name CSVToParquetJob \
+    --arguments '--source_path=s3://nyc-taxi-e2e-cmd/raw_tripdata/','--destination_path=s3://nyc-taxi-e2e-cmd/processed_tripdata/'
+
+
+aws glue get-job-runs --job-name CSVToParquetJob-NN9sEm9jQiGl
+
+aws glue get-crawlers
+
+aws glue start-crawler --name NycTaxiCrawler-faq7HFwZPJ5b
+
+aws glue get-crawler --name NycTaxiCrawler-faq7HFwZPJ5b

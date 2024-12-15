@@ -7,6 +7,8 @@ import aws_cdk as cdk
 from nyc_taxi_e2e.nyc_taxi_e2e_s3 import NycTaxiE2ES3Stack
 from nyc_taxi_e2e.nyc_taxi_e2e_pipeline import NycTaxiE2EPipelineStack
 from nyc_taxi_e2e.nyc_taxi_e2e_glue import NycTaxiE2EGlueStack
+from nyc_taxi_e2e.nyc_taxi_e2e_step_function import NycTaxiE2EStepFunctionStack
+from nyc_taxi_e2e.nyc_taxi_e2e_databrew import  NycTaxiE2EDataBrewStack
 
 
 app = cdk.App()
@@ -31,4 +33,6 @@ app = cdk.App()
 NycTaxiE2ES3Stack(app, "NycTaxiE2ES3Stack")
 NycTaxiE2EPipelineStack(app, "NycTaxiE2EPipelineStack")
 NycTaxiE2EGlueStack(app, "NycTaxiE2EGlueStack")
+NycTaxiE2EDataBrewStack(app, "NycTaxiE2EDataBrewStack")
+NycTaxiE2EStepFunctionStack(app, "NycTaxiE2EStepFunctionStack")
 app.synth()
